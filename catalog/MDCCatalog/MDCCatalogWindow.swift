@@ -61,6 +61,8 @@ class MDCCatalogWindow: MDCOverlayWindow {
         case .cancelled, .ended:
           endDisplayingTouch(touch)
           continue
+        default:
+            continue // Catalyst goes all the way to 5?
         }
       }
     }
