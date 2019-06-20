@@ -61,8 +61,12 @@ class MDCCatalogWindow: MDCOverlayWindow {
         case .cancelled, .ended:
           endDisplayingTouch(touch)
           continue
+#if targetEnvironment(UIKitForMac)
         default:
-            continue // Catalyst goes all the way to 5?
+            // Under UIKitForMac, UITouch.Phase can have a value of 5, but the enum does not define what this is.
+            // Bug raised as https://feedbackassistant.apple.com/feedback/6159030
+             continue
+#endif
         }
       }
     }
