@@ -40,6 +40,12 @@ static CGFloat kTopHandleTopMargin = (CGFloat)5.0;
  */
 @property(nonatomic) MDCBottomDrawerContainerViewController *bottomDrawerContainerViewController;
 
+#if TARGET_OS_UIKITFORMAC
+@property(nonatomic) UIPanGestureRecognizer *dragHandleGestureRecognizer;
+@property(nonatomic) CGPoint dragHandleTrackingPoint;
+@property(nonatomic) CGPoint dragHandleStartingContentOffset;
+#endif
+
 @end
 
 @implementation MDCBottomDrawerPresentationController
@@ -119,6 +125,13 @@ static CGFloat kTopHandleTopMargin = (CGFloat)5.0;
   } else {
     handleSuperview = bottomDrawerContainerViewController.contentViewController.view;
   }
+
+#if TARGET_OS_UIKITFORMAC
+  self.dragHandleGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragHandlePan:)];
+  [handleSuperview addGestureRecognizer:self.dragHandleGestureRecognizer];
+  self.dragHandleGestureRecognizer.enabled = !self.topHandleHidden;
+#endif
+
   [handleSuperview addSubview:self.topHandle];
   [NSLayoutConstraint constraintWithItem:self.topHandle
                                attribute:NSLayoutAttributeTop
@@ -170,6 +183,27 @@ static CGFloat kTopHandleTopMargin = (CGFloat)5.0;
       }
                       completion:nil];
 }
+
+#if TARGET_OS_UIKITFORMAC
+- (void)dragHandlePan:(UIPanGestureRecognizer *)pan {
+    switch (pan.state) {
+      case UIGestureRecognizerStateBegan:
+        self.dragHandleTrackingPoint = [pan locationInView:nil];
+        self.dragHandleStartingContentOffset = self.bottomDrawerContainerViewController.currentContentOffset;
+      case UIGestureRecognizerStateChanged: {
+        CGPoint newPoint = [pan locationInView:nil];
+        CGFloat delta = self.dragHandleTrackingPoint.y - newPoint.y;
+        [self.bottomDrawerContainerViewController setRawContentOffsetY:delta + self.dragHandleStartingContentOffset.y];
+      }
+      case UIGestureRecognizerStateEnded:
+        // TODO: Here the logic to maintain collapsed/expanded snapping must be triggered, however
+        // currently the Ended state is triggered sporadically during the drag.
+        break;
+      default:
+        break;
+    }
+}
+#endif
 
 - (void)presentationTransitionDidEnd:(BOOL)completed {
   // Set up the tap recognizer to dimiss the drawer by.

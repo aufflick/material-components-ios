@@ -164,4 +164,14 @@
 - (void)expandToFullscreenWithDuration:(CGFloat)duration
                             completion:(void (^__nullable)(BOOL finished))completion;
 
+#if TARGET_OS_UIKITFORMAC
+- (void)setRawContentOffsetY:(CGFloat)contentOffsetY;
+- (CGPoint)currentContentOffset;
+- (void)scrollViewWillBeginDragging:(UIScrollView *__nullable)scrollView;
+
+- (void)scrollViewWillEndDragging:(UIScrollView *__nullable)scrollView
+                     withVelocity:(CGPoint)velocity
+              targetContentOffset:(inout CGPoint *__nullable)targetContentOffset;
+#endif
+
 @end

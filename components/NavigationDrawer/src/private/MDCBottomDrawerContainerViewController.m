@@ -343,6 +343,16 @@ static UIColor *DrawerShadowColor(void) {
   }
 }
 
+#if TARGET_OS_UIKITFORMAC
+- (CGPoint)currentContentOffset {
+  return self.scrollView.contentOffset;
+}
+
+- (void)setRawContentOffsetY:(CGFloat)contentOffsetY {
+  [self.scrollView setContentOffset:CGPointMake(self.scrollView.contentOffset.x, contentOffsetY) animated:NO];
+}
+#endif
+
 - (void)setContentOffsetY:(CGFloat)contentOffsetY animated:(BOOL)animated {
   _scrollToContentOffsetY = contentOffsetY;
   CGFloat topAreaInsetForHeader = (self.headerViewController ? MDCDeviceTopSafeAreaInset() : 0);
