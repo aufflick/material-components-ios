@@ -186,22 +186,49 @@ static CGFloat kTopHandleTopMargin = (CGFloat)5.0;
 
 #if TARGET_OS_UIKITFORMAC
 - (void)dragHandlePan:(UIPanGestureRecognizer *)pan {
-    switch (pan.state) {
-      case UIGestureRecognizerStateBegan:
-        self.dragHandleTrackingPoint = [pan locationInView:nil];
-        self.dragHandleStartingContentOffset = self.bottomDrawerContainerViewController.currentContentOffset;
-      case UIGestureRecognizerStateChanged: {
-        CGPoint newPoint = [pan locationInView:nil];
-        CGFloat delta = self.dragHandleTrackingPoint.y - newPoint.y;
-        [self.bottomDrawerContainerViewController setRawContentOffsetY:delta + self.dragHandleStartingContentOffset.y];
-      }
-      case UIGestureRecognizerStateEnded:
-        // TODO: Here the logic to maintain collapsed/expanded snapping must be triggered, however
-        // currently the Ended state is triggered sporadically during the drag.
-        break;
-      default:
-        break;
+  CGPoint newPoint = [pan locationInView:nil];
+  CGFloat delta = self.dragHandleTrackingPoint.y - newPoint.y;
+  delta += self.dragHandleStartingContentOffset.y;
+
+  switch (pan.state) {
+    case UIGestureRecognizerStateBegan:
+    {
+      self.dragHandleTrackingPoint = [pan locationInView:nil];
+      self.dragHandleStartingContentOffset = self.bottomDrawerContainerViewController.currentContentOffset;
+      [self.bottomDrawerContainerViewController scrollViewWillBeginDragging:nil];
+      break;
     }
+    case UIGestureRecognizerStateChanged:
+    {
+      [self.bottomDrawerContainerViewController setRawContentOffsetY:delta];
+      break;
+    }
+    case UIGestureRecognizerStateEnded:
+    {
+      CGPoint velocity = [pan velocityInView:nil];
+
+      // Drag direction has the opposite effect to content scroll direction, so the vertical
+      // velocity must be reversed.
+      velocity.y = -velocity.y;
+
+      // High pass filter velocity. Minor variations of trackpad drags can created a reasonable
+      // amount of velocity in the reverse direction, the worst impact of which is to collapse the
+      // drawer after a user has dragged it larger.
+      if (fabs(velocity.y) < 700) {
+        velocity.y = 0;
+      }
+      
+      CGPoint targetContentOffset = (CGPoint){ 0, delta };
+      NSLog(@"velocity: %@", NSStringFromCGPoint(velocity));
+      [self.bottomDrawerContainerViewController drawerScrollEndedWithVelocity:velocity
+                                                     suppressHidingByVelocity:NO
+                                                          targetContentOffset:&targetContentOffset];
+      [self.bottomDrawerContainerViewController setRawContentOffsetY:targetContentOffset.y];
+      break;
+    }
+    default:
+      break;
+  }
 }
 #endif
 

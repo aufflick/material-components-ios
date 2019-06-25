@@ -719,18 +719,14 @@ static UIColor *DrawerShadowColor(void) {
   self.scrollViewBeganDraggingFromFullscreen = self.currentlyFullscreen;
 }
 
-- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView
-                     withVelocity:(CGPoint)velocity
-              targetContentOffset:(inout CGPoint *)targetContentOffset {
-  BOOL scrollViewBeganDraggingFromFullscreen = self.scrollViewBeganDraggingFromFullscreen;
-  self.scrollViewBeganDraggingFromFullscreen = NO;
-
-  if (!scrollViewBeganDraggingFromFullscreen &&
-      velocity.y < kDragVelocityThresholdForHidingDrawer) {
+- (void)drawerScrollEndedWithVelocity:(CGPoint)velocity
+             suppressHidingByVelocity:(BOOL)suppressHidingByVelocity
+                  targetContentOffset:(inout CGPoint *)targetContentOffset {
+  if (!suppressHidingByVelocity && velocity.y < kDragVelocityThresholdForHidingDrawer) {
     [self hideDrawer];
     return;
   }
-
+  
   if (self.scrollView.contentOffset.y < 0) {
     if (self.scrollView.contentOffset.y < -kVerticalDistanceThresholdForDismissal) {
       [self hideDrawer];
@@ -739,12 +735,21 @@ static UIColor *DrawerShadowColor(void) {
     }
     return;
   }
-
+  
   CGFloat scrollToContentOffsetY =
-      [self midAnimationScrollToPositionForOffset:*targetContentOffset];
+  [self midAnimationScrollToPositionForOffset:*targetContentOffset];
   if (scrollToContentOffsetY != NSNotFound) {
     targetContentOffset->y = scrollToContentOffsetY;
   }
+}
+
+- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView
+                     withVelocity:(CGPoint)velocity
+              targetContentOffset:(inout CGPoint *)targetContentOffset {
+  [self drawerScrollEndedWithVelocity:velocity
+             suppressHidingByVelocity:self.scrollViewBeganDraggingFromFullscreen
+                  targetContentOffset:targetContentOffset];
+  self.scrollViewBeganDraggingFromFullscreen = NO;
 }
 
 @end
