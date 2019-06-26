@@ -170,7 +170,7 @@
 - (void)scrollViewWillBeginDragging:(UIScrollView *__nullable)scrollView;
 
 - (void)drawerScrollEndedWithVelocity:(CGPoint)velocity
-             suppressHidingByVelocity:(BOOL)suppressHidingByVelocity
+             allowExpandingByVelocity:(BOOL)allowExpandingByVelocity
                   targetContentOffset:(inout CGPoint *__nonnull)targetContentOffset;
 #endif
 

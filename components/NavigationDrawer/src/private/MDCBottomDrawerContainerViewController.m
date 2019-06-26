@@ -720,9 +720,12 @@ static UIColor *DrawerShadowColor(void) {
 }
 
 - (void)drawerScrollEndedWithVelocity:(CGPoint)velocity
-             suppressHidingByVelocity:(BOOL)suppressHidingByVelocity
+             allowExpandingByVelocity:(BOOL)allowExpandingByVelocity
                   targetContentOffset:(inout CGPoint *)targetContentOffset {
-  if (!suppressHidingByVelocity && velocity.y < kDragVelocityThresholdForHidingDrawer) {
+  BOOL allowHidingByVelocity = !self.scrollViewBeganDraggingFromFullscreen;
+  self.scrollViewBeganDraggingFromFullscreen = NO;
+
+  if (allowHidingByVelocity && velocity.y < kDragVelocityThresholdForHidingDrawer) {
     [self hideDrawer];
     return;
   }
@@ -747,9 +750,8 @@ static UIColor *DrawerShadowColor(void) {
                      withVelocity:(CGPoint)velocity
               targetContentOffset:(inout CGPoint *)targetContentOffset {
   [self drawerScrollEndedWithVelocity:velocity
-             suppressHidingByVelocity:self.scrollViewBeganDraggingFromFullscreen
+             allowExpandingByVelocity:NO
                   targetContentOffset:targetContentOffset];
-  self.scrollViewBeganDraggingFromFullscreen = NO;
 }
 
 @end

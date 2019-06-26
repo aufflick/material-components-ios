@@ -201,6 +201,7 @@ static CGFloat kTopHandleTopMargin = (CGFloat)5.0;
     case UIGestureRecognizerStateChanged:
     {
       [self.bottomDrawerContainerViewController setRawContentOffsetY:delta];
+      NSLog(@"setRawContentOffsetY: %lf", delta);
       break;
     }
     case UIGestureRecognizerStateEnded:
@@ -220,12 +221,17 @@ static CGFloat kTopHandleTopMargin = (CGFloat)5.0;
       
       CGPoint targetContentOffset = (CGPoint){ 0, delta };
       NSLog(@"velocity: %@", NSStringFromCGPoint(velocity));
+      NSLog(@"targetContentOffset before: %@", NSStringFromCGPoint(targetContentOffset));
       [self.bottomDrawerContainerViewController drawerScrollEndedWithVelocity:velocity
-                                                     suppressHidingByVelocity:NO
+                                                     allowExpandingByVelocity:YES
                                                           targetContentOffset:&targetContentOffset];
+      NSLog(@"targetContentOffset after: %@", NSStringFromCGPoint(targetContentOffset));
       [self.bottomDrawerContainerViewController setRawContentOffsetY:targetContentOffset.y];
       break;
     }
+//    case UIGestureRecognizerStateCancelled:
+//      NSLog(@"cancelled");
+//      break;
     default:
       break;
   }
